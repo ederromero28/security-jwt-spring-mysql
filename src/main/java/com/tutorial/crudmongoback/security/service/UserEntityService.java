@@ -7,6 +7,7 @@ import com.tutorial.crudmongoback.security.enums.RolEnum;
 import com.tutorial.crudmongoback.security.repository.UserEntityRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -19,6 +20,9 @@ public class UserEntityService {
 	@Autowired
 	UserEntityRepository userEntityRepository;
 	
+	@Autowired
+	PasswordEncoder passwordEncoder;
+	
     public UserEntity create(CreateUserDTO dto) throws AttributeException {
         if(userEntityRepository.existsByUsername(dto.getUsername()))
             throw new AttributeException("username already in use");
@@ -26,11 +30,12 @@ public class UserEntityService {
             throw new AttributeException("email already in use");
         
         int	id = autoIncrement();
+        String password = passwordEncoder.encode(dto.getPassword());
         
         List<RolEnum> roles = 
         		dto.getRoles().stream().map(rol -> RolEnum.valueOf(rol)).collect(Collectors.toList());
         
-        UserEntity userEntity = new UserEntity(id, dto.getUsername(), dto.getEmail(), dto.getPassword(), roles);
+        UserEntity userEntity = new UserEntity(id, dto.getUsername(), dto.getEmail(), password, roles);
         
         return userEntityRepository.save(userEntity);
     }
