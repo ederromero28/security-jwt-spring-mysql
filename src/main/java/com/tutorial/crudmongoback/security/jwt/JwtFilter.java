@@ -30,32 +30,28 @@ public class JwtFilter extends OncePerRequestFilter{
 	@Autowired
 	UserDetailsServiceImpl userDetailsServiceImpl;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
-			throws ServletException, IOException {
-		
-		String token = getToken(req);
-		
-		try {
-			if (token != null && jwtProvider.validateToken(token)) {
-				String username = jwtProvider.getUsernameFromToken(token);
-				UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
-				UsernamePasswordAuthenticationToken authenticationToken =
-						new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
-				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-			}
-		} catch (UsernameNotFoundException e) {
-			logger.error("filter blocker request");
-		}
-		chain.doFilter(req, res);
-		
-	}
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
+        String token = getToken(req);
+        try {
+            if(token != null && jwtProvider.validateToken(token)) {
+                String username = jwtProvider.getUsernameFromToken(token);
+                UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            }
+        } catch (UsernameNotFoundException e) {
+            logger.error("filter blocked request");
+        }
+        chain.doFilter(req, res);
+    }
 
 	private String getToken(HttpServletRequest req) {
 		
 		String header = req.getHeader("Authorization");
 		
-		if (header != null && header.startsWith("Bearer ")) 
+		if(header != null && header.startsWith("Bearer "))
 			return header.replace("Bearer ", "");
 		
 		return null;

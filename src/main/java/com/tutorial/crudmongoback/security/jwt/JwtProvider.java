@@ -28,25 +28,23 @@ public class JwtProvider {
 	
 	private static final Logger logger = LoggerFactory.getLogger(JwtEntryPoint.class);
 	
-	@Value("${jwt.secret}")
-	private String secret;
+    @Value("${jwt.secret}")
+    private String secret;
 	
 	@Value("${jwt.expiration}")
 	private int expiration;
 		
-	public String generateToken(Authentication authentication) {
-		
-		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-		return Jwts.builder()
-				.signWith(getKey(secret))
-				.setSubject(userPrincipal.getUsername())
-				.setIssuedAt(new Date())
-				.setExpiration(new Date(new Date().getTime() + expiration * 1000))
-				.claim("roles", getRoles(userPrincipal))
-				.claim("cara", "feisima")
-				.compact();
-				
-	}
+    public String generateToken(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        return Jwts.builder()
+                .signWith(getKey(secret))
+                .setSubject(userPrincipal.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(new Date().getTime() + expiration * 3600))
+                .claim("roles", getRoles(userPrincipal))
+                .claim("cara", "feísima")
+                .compact();
+    }
 	
 	public String getUsernameFromToken(String token) {
 		return Jwts.parserBuilder().setSigningKey(getKey(secret)).build().parseClaimsJws(token).getBody().getSubject();
@@ -62,9 +60,7 @@ public class JwtProvider {
             logger.error("unsupported token");
         } catch (MalformedJwtException e) {
             logger.error("malformed token");
-        } /*catch (SignatureException e) {
-            logger.error("bad signature");
-        }*/ catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (Exception e) {
             logger.error("fail token");
@@ -73,9 +69,10 @@ public class JwtProvider {
     }
 	
 	
-	private List<String> getRoles(UserPrincipal principal) {
-		return principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-	}
+    private List<String> getRoles(UserPrincipal principal) {
+        return principal.getAuthorities()
+                .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+    }
 	
     private Key getKey(String secret){
         byte [] secretBytes = Decoders.BASE64URL.decode(secret);

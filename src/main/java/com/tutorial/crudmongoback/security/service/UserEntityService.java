@@ -2,11 +2,18 @@ package com.tutorial.crudmongoback.security.service;
 
 import com.tutorial.crudmongoback.global.exceptions.AttributeException;
 import com.tutorial.crudmongoback.security.dto.CreateUserDTO;
+import com.tutorial.crudmongoback.security.dto.JwtTokenDTO;
+import com.tutorial.crudmongoback.security.dto.LoginUserDTO;
 import com.tutorial.crudmongoback.security.entity.UserEntity;
 import com.tutorial.crudmongoback.security.enums.RolEnum;
+import com.tutorial.crudmongoback.security.jwt.JwtProvider;
 import com.tutorial.crudmongoback.security.repository.UserEntityRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +30,12 @@ public class UserEntityService {
 	@Autowired
 	PasswordEncoder passwordEncoder;
 	
+	@Autowired
+	JwtProvider jwtProvider;
+	
+	@Autowired
+	AuthenticationManager authenticationManager;
+	
     public UserEntity create(CreateUserDTO dto) throws AttributeException {
         if(userEntityRepository.existsByUsername(dto.getUsername()))
             throw new AttributeException("username already in use");
@@ -38,6 +51,14 @@ public class UserEntityService {
         UserEntity userEntity = new UserEntity(id, dto.getUsername(), dto.getEmail(), password, roles);
         
         return userEntityRepository.save(userEntity);
+    }
+    
+    public JwtTokenDTO login(LoginUserDTO dto) {
+        Authentication authentication =
+                authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtProvider.generateToken(authentication);
+        return new JwtTokenDTO(token);
     }
 
     

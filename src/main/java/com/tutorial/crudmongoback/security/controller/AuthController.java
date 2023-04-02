@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tutorial.crudmongoback.global.dto.MessageDto;
 import com.tutorial.crudmongoback.global.exceptions.AttributeException;
 import com.tutorial.crudmongoback.security.dto.CreateUserDTO;
+import com.tutorial.crudmongoback.security.dto.JwtTokenDTO;
+import com.tutorial.crudmongoback.security.dto.LoginUserDTO;
 import com.tutorial.crudmongoback.security.entity.UserEntity;
 import com.tutorial.crudmongoback.security.service.UserEntityService;
 
@@ -28,6 +30,14 @@ public class AuthController {
 		
 		UserEntity userEntity = userEntityService.create(dto);
 		return ResponseEntity.ok(new MessageDto(HttpStatus.OK, "user " + userEntity.getUsername() + " have bean created"));
+
+	}
+	
+	@PostMapping("/login")
+	public ResponseEntity<JwtTokenDTO> login(@Valid @RequestBody LoginUserDTO dto) throws AttributeException{
+		
+		JwtTokenDTO jwtTokenDTO = userEntityService.login(dto);
+		return ResponseEntity.ok(jwtTokenDTO);
 
 	}
 

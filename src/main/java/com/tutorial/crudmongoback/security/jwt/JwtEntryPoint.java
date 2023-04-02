@@ -18,8 +18,7 @@ public class JwtEntryPoint implements AuthenticationEntryPoint{
 	private static final Logger logger = LoggerFactory.getLogger(JwtEntryPoint.class);
 
 	@Override
-	public void commence(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException authException) throws IOException, ServletException {
+	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
 		logger.error("Token not found or invalid");
 		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "unathorized");
 	}
